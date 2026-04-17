@@ -1,0 +1,50 @@
+<div class="simple-soundboard-container">
+  <header class="simple-soundboard-header">
+    <div class="header-controls">
+      {{#if isGM}}
+      <button type="button" class="simple-soundboard-add" title="{{localize 'SIMPLE-SOUNDBOARD.AddSound'}}">
+        <i class="fas fa-plus"></i>
+        <span>{{localize "SIMPLE-SOUNDBOARD.AddSound"}}</span>
+      </button>
+      {{/if}}
+      <button type="button" class="simple-soundboard-stop-all" title="{{localize 'SIMPLE-SOUNDBOARD.StopAll'}}">
+        <i class="fas fa-stop"></i>
+        <span>{{localize "SIMPLE-SOUNDBOARD.StopAll"}}</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="simple-soundboard-grid" style="--columns: {{columns}}; --button-size: {{buttonSize}}px;">
+    {{#each sounds}}
+    <button 
+      type="button" 
+      class="simple-soundboard-button" 
+      data-sound-id="{{this.id}}"
+      style="background-color: {{this.color}};"
+      title="{{this.name}}&#10;{{localize 'SIMPLE-SOUNDBOARD.ClickToPlay'}}&#10;{{localize 'SIMPLE-SOUNDBOARD.RightClickToStop'}}{{#if ../isGM}}&#10;{{localize 'SIMPLE-SOUNDBOARD.DoubleClickToEdit'}}{{/if}}"
+    >
+      <i class="{{#if this.icon}}{{this.icon}}{{else}}fas fa-music{{/if}}"></i>
+      <span class="sound-name">{{this.name}}</span>
+      {{#if this.loop}}
+      <span class="loop-indicator" title="{{localize 'SIMPLE-SOUNDBOARD.LoopEnabled'}}">
+        <i class="fas fa-sync-alt"></i>
+      </span>
+      {{/if}}
+    </button>
+    {{else}}
+    <div class="simple-soundboard-empty">
+      <i class="fas fa-volume-mute"></i>
+      <p>{{localize "SIMPLE-SOUNDBOARD.NoSounds"}}</p>
+      {{#if isGM}}
+      <p class="hint">{{localize "SIMPLE-SOUNDBOARD.NoSoundsHint"}}</p>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+
+  <footer class="simple-soundboard-footer">
+    <span class="sound-count">
+      {{sounds.length}} {{localize "SIMPLE-SOUNDBOARD.Sounds"}}
+    </span>
+  </footer>
+</div>

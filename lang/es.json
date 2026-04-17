@@ -1,0 +1,45 @@
+{
+  "SIMPLE-SOUNDBOARD": {
+    "Title": "MUS-Pad Soundboard",
+    "AddSound": "Añadir Sonido",
+    "StopAll": "Detener Todo",
+    "NoSounds": "No hay sonidos configurados",
+    "NoSoundsHint": "Haz clic en 'Añadir Sonido' para crear tu primer botón de sonido",
+    "Sounds": "sonidos",
+    "ClickToPlay": "Clic para reproducir",
+    "RightClickToStop": "Clic derecho para detener",
+    "DoubleClickToEdit": "Doble clic para editar",
+    "LoopEnabled": "Bucle activado",
+    "ConfigureSound": "Configurar Sonido",
+    "SoundName": "Nombre",
+    "SoundNamePlaceholder": "Nombre del sonido...",
+    "SoundPath": "Archivo de Audio",
+    "SoundPathPlaceholder": "Ruta al archivo de audio...",
+    "BrowseFiles": "Explorar Archivos",
+    "PreviewSound": "Previsualizar Sonido",
+    "Volume": "Volumen",
+    "Loop": "Bucle",
+    "ButtonColor": "Color del Botón",
+    "Icon": "Icono",
+    "IconHint": "Clase de icono FontAwesome (ej: fas fa-drum, fas fa-guitar)",
+    "Save": "Guardar",
+    "Delete": "Eliminar",
+    "DeleteSound": "Eliminar Sonido",
+    "DeleteSoundConfirm": "¿Estás seguro de que quieres eliminar este sonido?",
+    "Unnamed": "Sonido sin nombre",
+    "ErrorNoPath": "Por favor selecciona un archivo de audio",
+    "ErrorPlaying": "Error al reproducir el sonido: {name}",
+    "AllSoundsStopped": "Todos los sonidos detenidos",
+    "DropFileNotSupported": "Arrastra archivos desde el explorador de archivos de Foundry",
+    "Settings": {
+      "Columns": "Columnas de la Cuadrícula",
+      "ColumnsHint": "Número de columnas en la cuadrícula del soundboard",
+      "ButtonSize": "Tamaño de los Botones",
+      "ButtonSizeHint": "Tamaño de los botones de sonido en píxeles"
+    },
+    "Keybinding": {
+      "Open": "Abrir Soundboard",
+      "OpenHint": "Abre la ventana del soundboard MUS-Pad"
+    }
+  }
+}

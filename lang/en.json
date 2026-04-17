@@ -1,0 +1,45 @@
+{
+  "SIMPLE-SOUNDBOARD": {
+    "Title": "MUS-Pad Soundboard",
+    "AddSound": "Add Sound",
+    "StopAll": "Stop All",
+    "NoSounds": "No sounds configured",
+    "NoSoundsHint": "Click 'Add Sound' to create your first sound button",
+    "Sounds": "sounds",
+    "ClickToPlay": "Click to play",
+    "RightClickToStop": "Right-click to stop",
+    "DoubleClickToEdit": "Double-click to edit",
+    "LoopEnabled": "Loop enabled",
+    "ConfigureSound": "Configure Sound",
+    "SoundName": "Name",
+    "SoundNamePlaceholder": "Sound name...",
+    "SoundPath": "Audio File",
+    "SoundPathPlaceholder": "Path to audio file...",
+    "BrowseFiles": "Browse Files",
+    "PreviewSound": "Preview Sound",
+    "Volume": "Volume",
+    "Loop": "Loop",
+    "ButtonColor": "Button Color",
+    "Icon": "Icon",
+    "IconHint": "FontAwesome icon class (e.g., fas fa-drum, fas fa-guitar)",
+    "Save": "Save",
+    "Delete": "Delete",
+    "DeleteSound": "Delete Sound",
+    "DeleteSoundConfirm": "Are you sure you want to delete this sound?",
+    "Unnamed": "Unnamed Sound",
+    "ErrorNoPath": "Please select an audio file",
+    "ErrorPlaying": "Error playing sound: {name}",
+    "AllSoundsStopped": "All sounds stopped",
+    "DropFileNotSupported": "Drag files from the Foundry file browser",
+    "Settings": {
+      "Columns": "Grid Columns",
+      "ColumnsHint": "Number of columns in the soundboard grid",
+      "ButtonSize": "Button Size",
+      "ButtonSizeHint": "Size of sound buttons in pixels"
+    },
+    "Keybinding": {
+      "Open": "Open Soundboard",
+      "OpenHint": "Opens the MUS-Pad soundboard window"
+    }
+  }
+}

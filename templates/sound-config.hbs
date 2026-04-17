@@ -1,0 +1,59 @@
+<form class="simple-soundboard-sound-form">
+  <div class="form-group">
+    <label for="name">{{localize "SIMPLE-SOUNDBOARD.SoundName"}}</label>
+    <input type="text" name="name" value="{{sound.name}}" placeholder="{{localize 'SIMPLE-SOUNDBOARD.SoundNamePlaceholder'}}" />
+  </div>
+
+  <div class="form-group">
+    <label for="path">{{localize "SIMPLE-SOUNDBOARD.SoundPath"}}</label>
+    <div class="form-fields">
+      <input type="text" name="path" value="{{sound.path}}" placeholder="{{localize 'SIMPLE-SOUNDBOARD.SoundPathPlaceholder'}}" />
+      <button type="button" class="file-picker" title="{{localize 'SIMPLE-SOUNDBOARD.BrowseFiles'}}">
+        <i class="fas fa-file-audio"></i>
+      </button>
+      <button type="button" class="preview-sound" title="{{localize 'SIMPLE-SOUNDBOARD.PreviewSound'}}">
+        <i class="fas fa-play"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="volume">{{localize "SIMPLE-SOUNDBOARD.Volume"}}</label>
+    <div class="form-fields">
+      <input type="range" name="volume" min="0" max="1" step="0.05" value="{{#if sound.volume}}{{sound.volume}}{{else}}0.8{{/if}}" />
+      <span class="range-value">{{#if sound.volume}}{{sound.volume}}{{else}}0.8{{/if}}</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="loop">{{localize "SIMPLE-SOUNDBOARD.Loop"}}</label>
+    <input type="checkbox" name="loop" {{#if sound.loop}}checked{{/if}} />
+  </div>
+
+  <div class="form-group">
+    <label for="color">{{localize "SIMPLE-SOUNDBOARD.ButtonColor"}}</label>
+    <div class="form-fields">
+      <input type="color" name="color" value="{{#if sound.color}}{{sound.color}}{{else}}{{defaultColor}}{{/if}}" />
+      <input type="text" name="color-text" value="{{#if sound.color}}{{sound.color}}{{else}}{{defaultColor}}{{/if}}" class="color-text" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="icon">{{localize "SIMPLE-SOUNDBOARD.Icon"}}</label>
+    <input type="text" name="icon" value="{{#if sound.icon}}{{sound.icon}}{{else}}fas fa-music{{/if}}" placeholder="fas fa-music" />
+    <p class="notes">{{localize "SIMPLE-SOUNDBOARD.IconHint"}}</p>
+  </div>
+
+  <footer class="sheet-footer flexrow">
+    {{#unless isNew}}
+    <button type="button" class="delete-sound">
+      <i class="fas fa-trash"></i>
+      {{localize "SIMPLE-SOUNDBOARD.Delete"}}
+    </button>
+    {{/unless}}
+    <button type="submit">
+      <i class="fas fa-save"></i>
+      {{localize "SIMPLE-SOUNDBOARD.Save"}}
+    </button>
+  </footer>
+</form>

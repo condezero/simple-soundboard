@@ -1,0 +1,303 @@
+/**
+ * MUS-Pad Soundboard Styles
+ */
+
+/* Variables CSS */
+:root {
+  --simple-soundboard-bg: #1a1a2e;
+  --simple-soundboard-header-bg: #16213e;
+  --simple-soundboard-button-shadow: rgba(0, 0, 0, 0.3);
+  --simple-soundboard-text: #ffffff;
+  --simple-soundboard-text-muted: #a0a0a0;
+  --simple-soundboard-border: #2d2d44;
+  --simple-soundboard-playing-glow: rgba(255, 255, 255, 0.6);
+}
+
+/* Contenedor principal */
+.simple-soundboard-app {
+  background: var(--simple-soundboard-bg);
+  border-radius: 8px;
+}
+
+.simple-soundboard-app .window-content {
+  padding: 0;
+  background: transparent;
+}
+
+.simple-soundboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header */
+.simple-soundboard-header {
+  padding: 10px 15px;
+  background: var(--simple-soundboard-header-bg);
+  border-bottom: 1px solid var(--simple-soundboard-border);
+}
+
+.simple-soundboard-header .header-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.simple-soundboard-header button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border: none;
+  border-radius: 5px;
+  color: white;
+  padding: 8px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.simple-soundboard-header button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.simple-soundboard-header .simple-soundboard-stop-all {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.simple-soundboard-header .simple-soundboard-stop-all:hover {
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+/* Grid de botones */
+.simple-soundboard-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 4), var(--button-size, 80px));
+  gap: 10px;
+  padding: 15px;
+  justify-content: center;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+}
+
+/* Botones de sonido */
+.simple-soundboard-button {
+  width: var(--button-size, 80px);
+  height: var(--button-size, 80px);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 4px 8px var(--simple-soundboard-button-shadow);
+  overflow: hidden;
+}
+
+.simple-soundboard-button i {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+.simple-soundboard-button .sound-name {
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.simple-soundboard-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px var(--simple-soundboard-button-shadow);
+}
+
+.simple-soundboard-button:active {
+  transform: scale(0.98);
+}
+
+/* Indicador de loop */
+.simple-soundboard-button .loop-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* Estado de reproducción */
+.simple-soundboard-button.playing {
+  animation: simple-soundboard-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 20px var(--simple-soundboard-playing-glow);
+}
+
+.simple-soundboard-button.playing::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.2);
+  animation: simple-soundboard-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes simple-soundboard-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+}
+
+@keyframes simple-soundboard-wave {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+/* Estado vacío */
+.simple-soundboard-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--simple-soundboard-text-muted);
+  text-align: center;
+}
+
+.simple-soundboard-empty i {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.simple-soundboard-empty p {
+  margin: 5px 0;
+}
+
+.simple-soundboard-empty .hint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Footer */
+.simple-soundboard-footer {
+  padding: 8px 15px;
+  background: var(--simple-soundboard-header-bg);
+  border-top: 1px solid var(--simple-soundboard-border);
+  font-size: 12px;
+  color: var(--simple-soundboard-text-muted);
+  text-align: center;
+}
+
+/* ===================== */
+/* Formulario de config  */
+/* ===================== */
+
+.simple-soundboard-config .window-content {
+  padding: 15px;
+}
+
+.simple-soundboard-sound-form .form-group {
+  margin-bottom: 15px;
+}
+
+.simple-soundboard-sound-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: var(--color-text-dark-primary);
+}
+
+.simple-soundboard-sound-form .form-fields {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.simple-soundboard-sound-form input[type="text"],
+.simple-soundboard-sound-form input[type="number"] {
+  flex: 1;
+}
+
+.simple-soundboard-sound-form input[type="range"] {
+  flex: 1;
+}
+
+.simple-soundboard-sound-form .range-value {
+  min-width: 40px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.simple-soundboard-sound-form input[type="color"] {
+  width: 50px;
+  height: 35px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.simple-soundboard-sound-form .color-text {
+  width: 100px;
+  font-family: monospace;
+}
+
+.simple-soundboard-sound-form button {
+  height: 35px;
+  padding: 0 12px;
+}
+
+.simple-soundboard-sound-form .file-picker,
+.simple-soundboard-sound-form .preview-sound {
+  flex-shrink: 0;
+}
+
+.simple-soundboard-sound-form .notes {
+  font-size: 11px;
+  color: var(--color-text-dark-secondary);
+  margin-top: 3px;
+}
+
+.simple-soundboard-sound-form .sheet-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-border-light-tertiary);
+  gap: 10px;
+}
+
+.simple-soundboard-sound-form .delete-sound {
+  background: #e74c3c;
+  border-color: #c0392b;
+}
+
+.simple-soundboard-sound-form .delete-sound:hover {
+  background: #c0392b;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .simple-soundboard-grid {
+    --columns: 3 !important;
+    --button-size: 70px !important;
+  }
+}
