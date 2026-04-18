@@ -7,6 +7,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   build:
@@ -32,7 +35,18 @@ jobs:
         download: https://github.com/${{github.repository}}/releases/download/${{github.event.release.tag_name}}/module.zip
 
     # Create a zip file with all files required by the module to add to the release
-    - run: zip -r ./module.zip soundscape.js module.json README.md changelog.md soundscape.css default.soundscapeData LICENSE img/ lang/ lib/ src/
+    - name: Create Module Zip
+      run: zip -r ./module.zip module.json README.md src/
+      continue-on-error: false
+
+    # Validate zip file was created
+    - name: Verify Zip File
+      run: |
+        if [ ! -f ./module.zip ]; then
+          echo "ERROR: module.zip was not created"
+          exit 1
+        fi
+        echo "SUCCESS: module.zip created successfully"
 
     # Create a release for this specific version
     - name: Update Release with Files
@@ -46,3 +60,11 @@ jobs:
         artifacts: './module.json,./module.zip'
         tag: ${{ github.event.release.tag_name }}
         body: ${{ github.event.release.body }}
+
+    # Notify on failure
+    - name: Release Failed Notification
+      if: failure()
+      run: |
+        echo "::error::Release workflow failed for tag ${{ github.event.release.tag_name }}"
+        echo "Please check the logs above for details"
+        exit 1
