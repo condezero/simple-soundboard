@@ -73,7 +73,7 @@
 /* Grid de botones */
 .simple-soundboard-grid {
   display: grid;
-  grid-template-columns: repeat(var(--columns, 4), var(--button-size, 80px));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
   padding: 15px;
   justify-content: center;
@@ -84,10 +84,10 @@
 
 /* Botones de sonido */
 .simple-soundboard-button {
-  width: var(--button-size, 80px);
-  height: var(--button-size, 80px);
+  width: 100%;
+  height: 100%;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -101,15 +101,11 @@
   position: relative;
   box-shadow: 0 4px 8px var(--simple-soundboard-button-shadow);
   overflow: hidden;
-}
-
-.simple-soundboard-button i {
-  font-size: 24px;
-  margin-bottom: 2px;
+  padding: 5px 10px;
 }
 
 .simple-soundboard-button .sound-name {
-  max-width: 90%;
+  max-width: 95%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -150,6 +146,70 @@
   bottom: 0;
   background: rgba(255, 255, 255, 0.2);
   animation: simple-soundboard-wave 1.5s ease-in-out infinite;
+}
+
+/* Wrapper para botón y slider de volumen */
+.sound-button-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 5px;
+  height: 100%;
+}
+
+.sound-button-wrapper .simple-soundboard-button {
+  flex: 1;
+  margin: 0;
+}
+
+/* Slider de volumen vertical */
+.volume-slider {
+  width: 25px;
+  height: 100%;
+  cursor: pointer;
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0 3px;
+  accent-color: #3498db;
+}
+
+.volume-slider:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Firefox specific */
+.volume-slider::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+.volume-slider::-moz-range-thumb {
+  background: #3498db;
+  border-radius: 50%;
+  border: none;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Chrome/Edge specific */
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 100%;
+  border-radius: 4px;
 }
 
 @keyframes simple-soundboard-pulse {

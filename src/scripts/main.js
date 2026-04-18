@@ -15,28 +15,42 @@ const DEFAULT_SETTINGS = {
 /**
  * Clase principal del Soundboard
  */
-class MusPadSoundboard extends Application {
+class MusPadSoundboard extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
   constructor(options = {}) {
     super(options);
     this.sounds = game.settings.get(MODULE_ID, 'sounds') || [];
     this.currentlyPlaying = new Map();
+    this.previewSound = null;
   }
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'simple-soundboard-soundboard',
-      title: game.i18n.localize('SIMPLE-SOUNDBOARD.Title'),
-      template: `modules/${MODULE_ID}/templates/soundboard.hbs`,
-      classes: ['simple-soundboard-app'],
-      width: 500,
-      height: 'auto',
-      minimizable: true,
+  static DEFAULT_OPTIONS = {
+    id: 'simple-soundboard-soundboard',
+    tag: 'form',
+    window: {
+      icon: 'fas fa-th',
       resizable: true,
-      dragDrop: [{ dragSelector: null, dropSelector: '.simple-soundboard-grid' }]
-    });
+      minimizable: true
+    },
+    position: {
+      width: 500,
+      height: 'auto'
+    },
+    classes: ['simple-soundboard-app']
+  };
+
+  _prepareOptions(options = {}) {
+    options = super._prepareOptions(options);
+    options.window.title = game.i18n.localize('SIMPLE-SOUNDBOARD.Title');
+    return options;
   }
 
-  getData(options = {}) {
+  static PARTS = {
+    form: {
+      template: `modules/${MODULE_ID}/src/templates/soundboard.hbs`
+    }
+  };
+
+  async _prepareContext(options = {}) {
     return {
       sounds: this.sounds,
       columns: game.settings.get(MODULE_ID, 'columns'),
@@ -45,25 +59,33 @@ class MusPadSoundboard extends Application {
     };
   }
 
-  activateListeners(html) {
-    super.activateListeners(html);
+  _attachPartListeners(partId, htmlElement, options) {
+    super._attachPartListeners(partId, htmlElement, options);
+    
+    // Convertir HTMLElement a jQuery para compatibilidad
+    const html = $(htmlElement);
 
-    // Reproducir sonido al hacer clic en un botón
-    html.find('.simple-soundboard-button').click(this._onPlaySound.bind(this));
+    if (partId === 'form') {
+      // Reproducir sonido al hacer clic en un botón
+      html.find('.simple-soundboard-button').click(this._onPlaySound.bind(this));
 
-    // Detener sonido con clic derecho
-    html.find('.simple-soundboard-button').contextmenu(this._onStopSound.bind(this));
+      // Detener sonido con clic derecho
+      html.find('.simple-soundboard-button').contextmenu(this._onStopSound.bind(this));
 
-    // Botón para añadir nuevo sonido
-    html.find('.simple-soundboard-add').click(this._onAddSound.bind(this));
+      // Botón para añadir nuevo sonido
+      html.find('.simple-soundboard-add').click(this._onAddSound.bind(this));
 
-    // Editar sonido con doble clic (solo GM)
-    if (game.user.isGM) {
-      html.find('.simple-soundboard-button').dblclick(this._onEditSound.bind(this));
+      // Editar sonido con doble clic (solo GM)
+      if (game.user.isGM) {
+        html.find('.simple-soundboard-button').dblclick(this._onEditSound.bind(this));
+      }
+
+      // Botón para detener todos los sonidos
+      html.find('.simple-soundboard-stop-all').click(this._onStopAllSounds.bind(this));
+
+      // Control de volumen
+      html.find('.volume-slider').on('input', this._onVolumeChange.bind(this));
     }
-
-    // Botón para detener todos los sonidos
-    html.find('.simple-soundboard-stop-all').click(this._onStopAllSounds.bind(this));
   }
 
   /**
@@ -142,8 +164,8 @@ class MusPadSoundboard extends Application {
       button.classList.add('playing');
 
       // Cuando termine el sonido, actualizar el estado
-      if (!sound.loop && playingSound.container) {
-        playingSound.container.on('end', () => {
+      if (!sound.loop) {
+        playingSound.addEventListener('end', () => {
           this.currentlyPlaying.delete(soundId);
           button.classList.remove('playing');
         });
@@ -163,7 +185,7 @@ class MusPadSoundboard extends Application {
       playingSound.stop();
       this.currentlyPlaying.delete(soundId);
       
-      const button = this.element.find(`[data-sound-id="${soundId}"]`);
+      const button = $(this.element).find(`[data-sound-id="${soundId}"]`);
       button.removeClass('playing');
     }
   }
@@ -189,17 +211,52 @@ class MusPadSoundboard extends Application {
   }
 
   /**
+   * Maneja el cambio de volumen en los sliders
+   */
+  async _onVolumeChange(event) {
+    event.preventDefault();
+    const soundId = event.currentTarget.dataset.soundId;
+    const newVolume = parseFloat(event.currentTarget.value);
+    
+    // Actualizar el volumen en el array de sonidos
+    const sound = this.sounds.find(s => s.id === soundId);
+    if (sound) {
+      sound.volume = newVolume;
+      
+      // Actualizar título del slider con el nuevo volumen
+      event.currentTarget.title = `Volumen: ${(newVolume * 100).toFixed(0)}%`;
+      
+      // Si el sonido se está reproduciendo, actualizar su volumen
+      if (this.currentlyPlaying.has(soundId)) {
+        const playingSound = this.currentlyPlaying.get(soundId);
+        if (playingSound) {
+          playingSound.volume = newVolume;
+        }
+      }
+      
+      // Guardar los cambios
+      await this._saveSounds();
+    }
+  }
+
+  /**
    * Abre el diálogo para añadir un nuevo sonido
    */
   async _onAddSound(event) {
     event.preventDefault();
-    new MusPadSoundConfig({}, (soundData) => {
+    console.log('[MusPadSoundboard] Opening add sound dialog');
+    new MusPadSoundConfig({}, async (soundData) => {
+      console.log('[MusPadSoundboard] Add sound callback - soundData:', soundData);
       this.sounds.push({
         id: foundry.utils.randomID(),
         ...soundData
       });
-      this._saveSounds();
-      this.render();
+      console.log('[MusPadSoundboard] Sound added to array, total sounds:', this.sounds.length);
+      console.log('[MusPadSoundboard] Saving sounds to settings...');
+      await this._saveSounds();
+      console.log('[MusPadSoundboard] Sounds saved, re-rendering soundboard...');
+      await this.render();
+      console.log('[MusPadSoundboard] Soundboard rendered');
     }).render(true);
   }
 
@@ -209,23 +266,36 @@ class MusPadSoundboard extends Application {
   async _onEditSound(event) {
     event.preventDefault();
     const soundId = event.currentTarget.dataset.soundId;
+    console.log('[MusPadSoundboard] Opening edit dialog for sound:', soundId);
     const sound = this.sounds.find(s => s.id === soundId);
     
-    if (!sound) return;
+    if (!sound) {
+      console.warn('[MusPadSoundboard] Sound not found:', soundId);
+      return;
+    }
 
-    new MusPadSoundConfig(sound, (soundData) => {
+    new MusPadSoundConfig(sound, async (soundData) => {
+      console.log('[MusPadSoundboard] Edit sound callback - soundData:', soundData);
       const index = this.sounds.findIndex(s => s.id === soundId);
       if (index !== -1) {
+        console.log('[MusPadSoundboard] Updating sound at index:', index);
         this.sounds[index] = { ...sound, ...soundData };
-        this._saveSounds();
-        this.render();
+        console.log('[MusPadSoundboard] Sound updated, saving...');
+        await this._saveSounds();
+        console.log('[MusPadSoundboard] Sound saved, re-rendering...');
+        await this.render();
+        console.log('[MusPadSoundboard] Soundboard rendered');
       }
-    }, () => {
+    }, async () => {
       // Callback para eliminar
+      console.log('[MusPadSoundboard] Delete callback for sound:', soundId);
       this.sounds = this.sounds.filter(s => s.id !== soundId);
       this._stopSound(soundId);
-      this._saveSounds();
-      this.render();
+      console.log('[MusPadSoundboard] Sound deleted, saving...');
+      await this._saveSounds();
+      console.log('[MusPadSoundboard] Sounds saved after deletion, re-rendering...');
+      await this.render();
+      console.log('[MusPadSoundboard] Soundboard rendered');
     }).render(true);
   }
 
@@ -233,7 +303,14 @@ class MusPadSoundboard extends Application {
    * Guarda los sonidos en la configuración
    */
   async _saveSounds() {
-    await game.settings.set(MODULE_ID, 'sounds', this.sounds);
+    console.log('[MusPadSoundboard] _saveSounds() - Saving', this.sounds.length, 'sounds');
+    console.log('[MusPadSoundboard] Sound data:', this.sounds);
+    try {
+      await game.settings.set(MODULE_ID, 'sounds', this.sounds);
+      console.log('[MusPadSoundboard] Sounds saved successfully');
+    } catch (e) {
+      console.error('[MusPadSoundboard] Error saving sounds:', e);
+    }
   }
 
   /**
@@ -252,76 +329,154 @@ class MusPadSoundboard extends Application {
 /**
  * Diálogo de configuración de sonido individual
  */
-class MusPadSoundConfig extends FormApplication {
+class MusPadSoundConfig extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
   constructor(sound = {}, onSubmit, onDelete) {
-    super(sound);
+    super({});
     this.sound = sound;
     this.onSubmit = onSubmit;
     this.onDelete = onDelete;
+    this.previewSound = null;
   }
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'simple-soundboard-sound-config',
-      title: game.i18n.localize('SIMPLE-SOUNDBOARD.ConfigureSound'),
-      template: `modules/${MODULE_ID}/templates/sound-config.hbs`,
-      classes: ['simple-soundboard-config'],
+  static DEFAULT_OPTIONS = {
+    id: 'simple-soundboard-sound-config',
+    tag: 'form',
+    window: {
+      icon: 'fas fa-edit'
+    },
+    position: {
       width: 400,
       height: 'auto'
-    });
+    },
+    classes: ['simple-soundboard-config']
+  };
+
+  _prepareOptions(options = {}) {
+    options = super._prepareOptions(options);
+    options.window.title = game.i18n.localize('SIMPLE-SOUNDBOARD.ConfigureSound');
+    return options;
   }
 
-  getData(options = {}) {
+  static PARTS = {
+    form: {
+      template: `modules/${MODULE_ID}/src/templates/sound-config.hbs`
+    }
+  };
+
+  async _prepareContext(options = {}) {
+    const playlists = game.playlists.contents.map(p => ({
+      id: p.id,
+      name: p.name
+    }));
+
+    let sounds = [];
+    if (this.sound.playlistId) {
+      const playlist = game.playlists.get(this.sound.playlistId);
+      if (playlist) {
+        sounds = playlist.sounds.map(s => ({
+          id: s.id,
+          name: s.name
+        }));
+      }
+    }
+
     return {
       sound: this.sound,
       isNew: !this.sound.id,
-      defaultColor: '#3498db'
+      defaultColor: '#3498db',
+      playlists: playlists,
+      sounds: sounds
     };
   }
 
-  activateListeners(html) {
-    super.activateListeners(html);
+  _attachPartListeners(partId, htmlElement, options) {
+    super._attachPartListeners(partId, htmlElement, options);
+    
+    // Convertir HTMLElement a jQuery para compatibilidad
+    const html = $(htmlElement);
 
-    // FilePicker para seleccionar el archivo de sonido
-    html.find('.file-picker').click(this._onFilePicker.bind(this));
+    if (partId === 'form') {
+      // Listener para cambio de playlist
+      html.find('#playlistId').change(this._onPlaylistChange.bind(this));
 
-    // Botón de eliminar
-    html.find('.delete-sound').click(this._onDelete.bind(this));
+      // Botón de eliminar
+      html.find('.delete-sound').click(this._onDelete.bind(this));
 
-    // Preview del sonido
-    html.find('.preview-sound').click(this._onPreview.bind(this));
+      // Preview del sonido
+      html.find('.preview-sound').click(this._onPreview.bind(this));
+      
+      // Detener preview
+      html.find('.stop-preview').click(this._onStopPreview.bind(this));
+      
+      // Actualizar el display del volumen en tiempo real
+      html.find('input[name="volume"]').on('input', (event) => {
+        const value = $(event.target).val();
+        html.find('.range-value').text(value);
+      });
+      
+      // Botón de guardar - CUSTOM LISTENER, NO _onSubmit
+      html.find('.save-sound').click(this._onSaveSound.bind(this));
+    }
   }
 
-  async _onFilePicker(event) {
+  async _onStopPreview(event) {
     event.preventDefault();
-    const fp = new FilePicker({
-      type: 'audio',
-      current: this.sound.path || '',
-      callback: path => {
-        this.element.find('input[name="path"]').val(path);
-        // Auto-rellenar el nombre si está vacío
-        const nameInput = this.element.find('input[name="name"]');
-        if (!nameInput.val()) {
-          const name = path.split('/').pop().replace(/\.[^/.]+$/, '');
-          nameInput.val(name);
-        }
-      }
-    });
-    fp.render(true);
+    if (this.previewSound) {
+      this.previewSound.stop();
+      this.previewSound = null;
+    }
+  }
+
+  async _onPlaylistChange(event) {
+    const playlistId = $(event.target).val();
+    this.sound.playlistId = playlistId;
+    this.sound.soundId = ''; // Limpiar selección de sonido
+    await this.render();
   }
 
   async _onPreview(event) {
     event.preventDefault();
-    const path = this.element.find('input[name="path"]').val();
-    const volume = parseFloat(this.element.find('input[name="volume"]').val());
+    const playlistId = $(this.form).find('#playlistId').val();
+    const soundId = $(this.form).find('#soundId').val();
     
-    if (path) {
-      foundry.audio.AudioHelper.play({
-        src: path,
-        volume: volume,
-        loop: false
-      }, false);
+    if (!playlistId || !soundId) {
+      ui.notifications.warn(game.i18n.localize('SIMPLE-SOUNDBOARD.SelectSoundFirst'));
+      return;
     }
+    
+    // Detener el sonido anterior si hay uno en preview
+    if (this.previewSound) {
+      this.previewSound.stop();
+      this.previewSound = null;
+    }
+    
+    const playlist = game.playlists.get(playlistId);
+    if (!playlist) return;
+    
+    const sound = playlist.sounds.get(soundId);
+    if (!sound) return;
+    
+    const volume = parseFloat($(this.form).find('input[name="volume"]').val()) || 0.8;
+    
+    this.previewSound = await foundry.audio.AudioHelper.play({
+      src: sound.path,
+      volume: volume,
+      loop: false
+    }, false);
+  }
+
+  async close(options = {}) {
+    console.log('[MusPadSoundConfig] Closing dialog');
+    // Detener el sonido en preview al cerrar
+    if (this.previewSound) {
+      console.log('[MusPadSoundConfig] Stopping preview sound');
+      this.previewSound.stop();
+      this.previewSound = null;
+    }
+    console.log('[MusPadSoundConfig] Calling super.close()');
+    const result = await super.close(options);
+    console.log('[MusPadSoundConfig] Dialog closed, result:', result);
+    return result;
   }
 
   _onDelete(event) {
@@ -338,24 +493,57 @@ class MusPadSoundConfig extends FormApplication {
     }
   }
 
-  async _updateObject(event, formData) {
-    const soundData = {
-      name: formData.name || game.i18n.localize('SIMPLE-SOUNDBOARD.Unnamed'),
-      path: formData.path,
-      volume: parseFloat(formData.volume) || 0.8,
-      loop: formData.loop || false,
-      color: formData.color || '#3498db',
-      icon: formData.icon || 'fas fa-music'
-    };
-
-    if (!soundData.path) {
-      ui.notifications.error(game.i18n.localize('SIMPLE-SOUNDBOARD.ErrorNoPath'));
+  async _onSaveSound(event) {
+    console.log('[MusPadSoundConfig] _onSaveSound - START');
+    event.preventDefault();
+    
+    const form = $(this.form);
+    const playlistId = form.find('#playlistId').val();
+    const soundId = form.find('#soundId').val();
+    
+    console.log('[MusPadSoundConfig] Validating: playlistId=', playlistId, 'soundId=', soundId);
+    
+    if (!playlistId || !soundId) {
+      console.warn('[MusPadSoundConfig] Validation failed');
+      ui.notifications.error(game.i18n.localize('SIMPLE-SOUNDBOARD.SelectSoundFirst'));
       return;
     }
-
-    if (this.onSubmit) {
-      this.onSubmit(soundData);
+    
+    const playlist = game.playlists.get(playlistId);
+    if (!playlist) {
+      console.warn('[MusPadSoundConfig] Playlist not found');
+      ui.notifications.error(game.i18n.localize('SIMPLE-SOUNDBOARD.PlaylistNotFound'));
+      return;
     }
+    
+    const sound = playlist.sounds.get(soundId);
+    if (!sound) {
+      console.warn('[MusPadSoundConfig] Sound not found');
+      ui.notifications.error(game.i18n.localize('SIMPLE-SOUNDBOARD.SoundNotFound'));
+      return;
+    }
+    
+    const soundData = {
+      name: form.find('input[name="name"]').val() || sound.name,
+      playlistId: playlistId,
+      soundId: soundId,
+      path: sound.path,
+      volume: parseFloat(form.find('input[name="volume"]').val()) || 0.8,
+      loop: form.find('input[name="loop"]').is(':checked') || false,
+      color: form.find('input[name="color"]').val() || '#3498db'
+    };
+    
+    console.log('[MusPadSoundConfig] Sound data prepared:', soundData);
+    
+    if (this.onSubmit) {
+      console.log('[MusPadSoundConfig] Calling onSubmit callback');
+      await this.onSubmit(soundData);
+      console.log('[MusPadSoundConfig] onSubmit callback completed');
+    }
+    
+    console.log('[MusPadSoundConfig] Closing dialog');
+    await this.close();
+    console.log('[MusPadSoundConfig] _onSaveSound - END');
   }
 }
 
@@ -404,37 +592,49 @@ Hooks.once('init', () => {
 });
 
 Hooks.once('ready', () => {
-  console.log(`Simple Soundboard | Ready`);
+  console.log(`[Simple Soundboard] Ready - Initializing soundboard`);
+  console.log(`[Simple Soundboard] Creating global soundboard instance`);
   
   // Crear instancia global del soundboard
   game.simpleSoundboard = {
     soundboard: new MusPadSoundboard(),
-    open: () => game.simpleSoundboard.soundboard.render(true)
+    open: () => {
+      console.log('[Simple Soundboard] Opening soundboard');
+      return game.simpleSoundboard.soundboard.render(true);
+    }
   };
+  console.log(`[Simple Soundboard] Soundboard ready`);
 });
 
-// Añadir botón en los controles de escena
+// Añadir botón en los controles de escena (v13)
 Hooks.on('getSceneControlButtons', (controls) => {
-  const sounds = controls.find(c => c.name === 'sounds');
-  if (sounds) {
-    sounds.tools.push({
+  const soundsControl = controls.sounds;
+  
+  if (soundsControl) {
+    soundsControl.tools['simple-soundboard'] = {
       name: 'simple-soundboard',
       title: game.i18n.localize('SIMPLE-SOUNDBOARD.Title'),
       icon: 'fas fa-th',
       button: true,
-      onClick: () => game.simpleSoundboard.open()
-    });
+      onChange: (isActive) => {
+        if (isActive && game.simpleSoundboard) {
+          game.simpleSoundboard.open();
+        }
+      }
+    };
   }
 });
 
-// Atajos de teclado
-Hooks.once('ready', () => {
+// Atajos de teclado (debe estar en 'init', no en 'ready' para v13+)
+Hooks.once('init', () => {
   game.keybindings.register(MODULE_ID, 'openSoundboard', {
     name: game.i18n.localize('SIMPLE-SOUNDBOARD.Keybinding.Open'),
     hint: game.i18n.localize('SIMPLE-SOUNDBOARD.Keybinding.OpenHint'),
     editable: [{ key: 'KeyS', modifiers: ['Control', 'Shift'] }],
     onDown: () => {
-      game.simpleSoundboard.open();
+      if (game.simpleSoundboard) {
+        game.simpleSoundboard.open();
+      }
       return true;
     }
   });

@@ -14,23 +14,34 @@
     </div>
   </header>
 
-  <div class="simple-soundboard-grid" style="--columns: {{columns}}; --button-size: {{buttonSize}}px;">
+  <div class="simple-soundboard-grid">
     {{#each sounds}}
-    <button 
-      type="button" 
-      class="simple-soundboard-button" 
-      data-sound-id="{{this.id}}"
-      style="background-color: {{this.color}};"
-      title="{{this.name}}&#10;{{localize 'SIMPLE-SOUNDBOARD.ClickToPlay'}}&#10;{{localize 'SIMPLE-SOUNDBOARD.RightClickToStop'}}{{#if ../isGM}}&#10;{{localize 'SIMPLE-SOUNDBOARD.DoubleClickToEdit'}}{{/if}}"
-    >
-      <i class="{{#if this.icon}}{{this.icon}}{{else}}fas fa-music{{/if}}"></i>
-      <span class="sound-name">{{this.name}}</span>
-      {{#if this.loop}}
-      <span class="loop-indicator" title="{{localize 'SIMPLE-SOUNDBOARD.LoopEnabled'}}">
-        <i class="fas fa-sync-alt"></i>
-      </span>
-      {{/if}}
-    </button>
+    <div class="sound-button-wrapper" data-sound-id="{{this.id}}">
+      <button 
+        type="button" 
+        class="simple-soundboard-button" 
+        data-sound-id="{{this.id}}"
+        style="background-color: {{this.color}};"
+        title="{{this.name}}&#10;{{localize 'SIMPLE-SOUNDBOARD.ClickToPlay'}}&#10;{{localize 'SIMPLE-SOUNDBOARD.RightClickToStop'}}{{#if ../isGM}}&#10;{{localize 'SIMPLE-SOUNDBOARD.DoubleClickToEdit'}}{{/if}}"
+      >
+        <span class="sound-name">{{this.name}}</span>
+        {{#if this.loop}}
+        <span class="loop-indicator" title="{{localize 'SIMPLE-SOUNDBOARD.LoopEnabled'}}">
+          <i class="fas fa-sync-alt"></i>
+        </span>
+        {{/if}}
+      </button>
+      <input 
+        type="range" 
+        class="volume-slider" 
+        data-sound-id="{{this.id}}" 
+        min="0" 
+        max="1" 
+        step="0.05" 
+        value="{{this.volume}}"
+        title="Volumen: {{this.volume}}"
+      />
+    </div>
     {{else}}
     <div class="simple-soundboard-empty">
       <i class="fas fa-volume-mute"></i>

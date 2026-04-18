@@ -1,20 +1,37 @@
-<form class="simple-soundboard-sound-form">
+<form class="simple-soundboard-sound-form" id="sound-config-form">
   <div class="form-group">
     <label for="name">{{localize "SIMPLE-SOUNDBOARD.SoundName"}}</label>
     <input type="text" name="name" value="{{sound.name}}" placeholder="{{localize 'SIMPLE-SOUNDBOARD.SoundNamePlaceholder'}}" />
   </div>
 
   <div class="form-group">
-    <label for="path">{{localize "SIMPLE-SOUNDBOARD.SoundPath"}}</label>
-    <div class="form-fields">
-      <input type="text" name="path" value="{{sound.path}}" placeholder="{{localize 'SIMPLE-SOUNDBOARD.SoundPathPlaceholder'}}" />
-      <button type="button" class="file-picker" title="{{localize 'SIMPLE-SOUNDBOARD.BrowseFiles'}}">
-        <i class="fas fa-file-audio"></i>
-      </button>
-      <button type="button" class="preview-sound" title="{{localize 'SIMPLE-SOUNDBOARD.PreviewSound'}}">
-        <i class="fas fa-play"></i>
-      </button>
-    </div>
+    <label for="playlistId">{{localize "SIMPLE-SOUNDBOARD.SelectPlaylist"}}</label>
+    <select name="playlistId" id="playlistId">
+      <option value="">-- {{localize "SIMPLE-SOUNDBOARD.SelectPlaylistOption"}} --</option>
+      {{#each playlists}}
+        <option value="{{this.id}}" {{#if (eq ../sound.playlistId this.id)}}selected{{/if}}>
+          {{this.name}}
+        </option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="soundId">{{localize "SIMPLE-SOUNDBOARD.SelectSound"}}</label>
+    <select name="soundId" id="soundId">
+      <option value="">-- {{localize "SIMPLE-SOUNDBOARD.SelectSoundOption"}} --</option>
+      {{#each sounds}}
+        <option value="{{this.id}}" {{#if (eq ../sound.soundId this.id)}}selected{{/if}}>
+          {{this.name}}
+        </option>
+      {{/each}}
+    </select>
+    <button type="button" class="preview-sound" title="{{localize 'SIMPLE-SOUNDBOARD.PreviewSound'}}">
+      <i class="fas fa-play"></i> {{localize "SIMPLE-SOUNDBOARD.Preview"}}
+    </button>
+    <button type="button" class="stop-preview" title="{{localize 'SIMPLE-SOUNDBOARD.StopPreview'}}">
+      <i class="fas fa-stop"></i> {{localize "SIMPLE-SOUNDBOARD.Stop"}}
+    </button>
   </div>
 
   <div class="form-group">
@@ -38,12 +55,6 @@
     </div>
   </div>
 
-  <div class="form-group">
-    <label for="icon">{{localize "SIMPLE-SOUNDBOARD.Icon"}}</label>
-    <input type="text" name="icon" value="{{#if sound.icon}}{{sound.icon}}{{else}}fas fa-music{{/if}}" placeholder="fas fa-music" />
-    <p class="notes">{{localize "SIMPLE-SOUNDBOARD.IconHint"}}</p>
-  </div>
-
   <footer class="sheet-footer flexrow">
     {{#unless isNew}}
     <button type="button" class="delete-sound">
@@ -51,7 +62,7 @@
       {{localize "SIMPLE-SOUNDBOARD.Delete"}}
     </button>
     {{/unless}}
-    <button type="submit">
+    <button type="button" class="save-sound">
       <i class="fas fa-save"></i>
       {{localize "SIMPLE-SOUNDBOARD.Save"}}
     </button>
