@@ -2,14 +2,14 @@
   "id": "simple-soundboard",
   "title": "Simple Soundboard",
   "description": "Un soundboard interactivo con botones configurables para reproducir efectos de sonido y música durante tus partidas.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
   },
   "authors": [
     {
-      "name": "Carlos",
+      "name": "Condezero",
       "flags": {}
     }
   ],

@@ -85,6 +85,12 @@ class MusPadSoundboard extends foundry.applications.api.HandlebarsApplicationMix
 
       // Control de volumen
       html.find('.volume-slider').on('input', this._onVolumeChange.bind(this));
+      
+      // Inicializar las barras de volumen
+      html.find('.volume-slider').each((index, element) => {
+        const volumePercent = parseFloat(element.value) * 100;
+        element.style.background = `linear-gradient(to top, #3498db 0%, #3498db ${volumePercent}%, rgba(0, 0, 0, 0.3) ${volumePercent}%, rgba(0, 0, 0, 0.3) 100%)`;
+      });
     }
   }
 
@@ -217,6 +223,11 @@ class MusPadSoundboard extends foundry.applications.api.HandlebarsApplicationMix
     event.preventDefault();
     const soundId = event.currentTarget.dataset.soundId;
     const newVolume = parseFloat(event.currentTarget.value);
+    const slider = event.currentTarget;
+    
+    // Actualizar la barra de volumen visual
+    const volumePercent = newVolume * 100;
+    slider.style.background = `linear-gradient(to top, #3498db 0%, #3498db ${volumePercent}%, rgba(0, 0, 0, 0.3) ${volumePercent}%, rgba(0, 0, 0, 0.3) 100%)`;
     
     // Actualizar el volumen en el array de sonidos
     const sound = this.sounds.find(s => s.id === soundId);
@@ -224,7 +235,7 @@ class MusPadSoundboard extends foundry.applications.api.HandlebarsApplicationMix
       sound.volume = newVolume;
       
       // Actualizar título del slider con el nuevo volumen
-      event.currentTarget.title = `Volumen: ${(newVolume * 100).toFixed(0)}%`;
+      slider.title = `Volumen: ${(newVolume * 100).toFixed(0)}%`;
       
       // Si el sonido se está reproduciendo, actualizar su volumen
       if (this.currentlyPlaying.has(soundId)) {
